@@ -35,7 +35,7 @@ public class VRVisit : MonoBehaviour
         {
             _selectAction.Enable();
         }
-        
+
         if (rayInteractor != null) rayInteractor.enabled = true;
     }
 
@@ -48,8 +48,12 @@ public class VRVisit : MonoBehaviour
 
     void Update()
     {
-        foreach (Vector3 pos in navigationNodesPos)
+        if (_isTeleportingActive)
+            return;
+
+        for (int i = 0; i < navigationNodesPos.Count; i++)
         {
+            Vector3 pos = navigationNodesPos[i];
             //texts[i].text = "distance pos " + i + " = " + Vector3.Distance(this.transform.position, pos);
             float distanceX = Math.Abs(mainCam.transform.position.x - pos.x);
             float distanceZ = Math.Abs(mainCam.transform.position.z - pos.z);
@@ -58,8 +62,12 @@ public class VRVisit : MonoBehaviour
                 if (sphereRenderer != null && sphereRenderer.enabled == false)
                 {
                     sphereRenderer.enabled = true;
+                    float alpha = Mathf.InverseLerp(snapDistance, 0.05f, distanceX);
+                    sphereRenderer.material.SetFloat("_Alpha", alpha);
+                    sphereRenderer.material.SetTexture("_Alpha", navigationNodes[i].photo);
+                    sphereRenderer.material.SetVector("_Offset", navigationNodes[i].offset);
                 }
-                if (mineModel != null && mineModel.activeSelf == true)
+                if (mineModel != null && mineModel.activeSelf == true && sphereRenderer.material.GetFloat("_Alpha") > 0.9f)
                 {
                     mineModel.SetActive(false);
                 }
